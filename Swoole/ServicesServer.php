@@ -23,9 +23,9 @@ use Arikaim\Core\Validator\ValidatorStrategy;
 use Arikaim\Core\Http\Session;
 
 /**
- * Http swoole server 
+ * Arikaim services swoole server 
  */
-class HttpServer extends AbstractServer implements ServerInterface
+class ServicesServer extends AbstractServer implements ServerInterface
 {  
     /**
      * Http server swoole instance
@@ -49,7 +49,7 @@ class HttpServer extends AbstractServer implements ServerInterface
         // Set router       
         Arikaim::$app->getRouteCollector()->setDefaultInvocationStrategy(new ValidatorStrategy());                          
         // Add middlewares
-        Arikaim::initMiddleware();
+        $this->initMiddleware();
 
         // server start
         $this->server->on('start',function (Server $server) {
@@ -79,5 +79,9 @@ class HttpServer extends AbstractServer implements ServerInterface
     public function run(): void
     {
         $this->server->start();
+    }
+
+    public function initMiddleware()
+    {        
     }
 }

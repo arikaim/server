@@ -17,14 +17,15 @@ use Arikaim\Core\Server\ServerInterface;
 class ArikaimServerFactory 
 {  
     const DEFAULT_SERVER_TYPE = 'http';
-    const DEFAULT_SERVER_LIV  = 'swoole';
+    const DEFAULT_SERVER_LIB  = 'swoole';
 
     /**
      * Server classes list
      */
     const SERVERS_LIST = [
         'http' => [
-            'swoole' => 'Arikaim\\Core\\Server\\Swoole\\HttpServer'
+            'swoole'   => 'Arikaim\\Core\\Server\\Swoole\\HttpServer',
+            'services' => 'Arikaim\\Core\\Server\\Swoole\\ServicesServer'
         ]
     ];
 
@@ -45,7 +46,7 @@ class ArikaimServerFactory
     public static function create(?string $type = null, ?string $serverLib = null): ?ServerInterface
     {
         $type = $type ?? Self::DEFAULT_SERVER_TYPE;
-        $serverLib = $serverLib ?? Self::DEFAULT_SERVER_LIV;
+        $serverLib = $serverLib ?? Self::DEFAULT_SERVER_LIB;
 
         $serverClass = Self::SERVERS_LIST[$type][$serverLib] ?? null;
         if (empty($serverClass) == true) {         
