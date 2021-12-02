@@ -4,7 +4,7 @@
 
 Arikaim server core package
 
-Http, services adb websocket server created with swoole php extension.
+Http, services and websocket server created with swoole php extension.
 
 #### Requirements 
   * PHP 7.4
