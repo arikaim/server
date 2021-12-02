@@ -19,22 +19,26 @@ class ArikaimServerFactory
     const DEFAULT_SERVER_TYPE = 'http';
     const DEFAULT_SERVER_LIB  = 'swoole';
 
+    const SERVER_TYPE = [
+        'http',
+        'services',
+        'websocket'
+    ];
+
     /**
      * Server classes list
      */
     const SERVERS_LIST = [
         'http' => [
-            'swoole'   => 'Arikaim\\Core\\Server\\Swoole\\HttpServer',
-            'services' => 'Arikaim\\Core\\Server\\Swoole\\ServicesServer'
+            'swoole' => 'Arikaim\\Core\\Server\\Swoole\\HttpServer'           
+        ],
+        'services' => [
+            'swoole' => 'Arikaim\\Core\\Server\\Swoole\\ServicesServer'
+        ],
+        'websocket' => [
+            'swoole' => 'Arikaim\\Core\\Server\\Swoole\\WebSocketServer'
         ]
     ];
-
-    /**
-     * Server options
-     *
-     * @var array
-     */
-    private static $options;
 
     /**
      * Create server instance
@@ -43,18 +47,66 @@ class ArikaimServerFactory
      * @param string|null $serverLib
      * @return ServerInterface|null
      */
-    public static function create(?string $type = null, ?string $serverLib = null): ?ServerInterface
+    public static function create(?array $options = null): ?ServerInterface
     {
-        $type = $type ?? Self::DEFAULT_SERVER_TYPE;
-        $serverLib = $serverLib ?? Self::DEFAULT_SERVER_LIB;
+        $options = ($options == null) ? Self::getConsoleOptions() : $options;
+
+        $type = $options['type'] ?? Self::DEFAULT_SERVER_TYPE;
+        $serverLib = $options['lib'] ?? Self::DEFAULT_SERVER_LIB;
+        $host = $options['host'] ?? null;
+        $port = $options['port'] ?? null;
+
+        if (\in_array($type,Self::SERVER_TYPE) == false) {
+            echo 'Not vlaid server type' . PHP_EOL;
+            return null;
+        }
 
         $serverClass = Self::SERVERS_LIST[$type][$serverLib] ?? null;
+
         if (empty($serverClass) == true) {         
             return null;
         }
 
-        $server = new $serverClass();
+        $server = new $serverClass($host,$port,$options);
 
         return $server;
+    }
+
+    /**
+     * Get console options
+     *
+     * @return array
+     */
+    public static function getConsoleOptions(): array
+    {
+        $console = \getopt("c:t:h:p:l:a:");
+        $configFile = $console['c'] ?? null;
+
+        if (empty($configFile) == false) {
+            $result = Self::loadConfigFile((string)$configFile);
+            if (\is_array($result) == true) {
+                return $result;
+            }
+        }
+        
+
+        $options['type'] = $console['t'] ?? 'services';
+        $options['host'] = $console['h'] ?? null;
+        $options['port'] = $console['p'] ?? null;
+        $options['lib']  = $console['l'] ?? 'swoole';
+        $options['appClass'] = $console['a'] ?? null;
+
+        return $options;
+    }
+
+    /**
+     * Load config file
+     *
+     * @param string $fileName
+     * @return array|null
+     */
+    public static function loadConfigFile(string $fileName): ?array
+    {
+        return (\file_exists($fileName) == true) ? include($fileName) : null;          
     }
 }

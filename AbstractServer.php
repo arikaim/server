@@ -10,6 +10,7 @@
 namespace Arikaim\Core\Server;
 
 use Arikaim\Core\Server\ServerInterface;
+use Twig\Node\Expression\Test\NullTest;
 
 /**
  * Abstract server 
@@ -95,7 +96,7 @@ abstract class AbstractServer implements ServerInterface
      * @param mixed $default
      * @return mixed
      */
-    public function getOption(string $key, $default)
+    public function getOption(string $key, $default = null)
     {
         return $this->options[$key] ?? $default;
     }

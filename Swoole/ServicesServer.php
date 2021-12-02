@@ -43,9 +43,7 @@ class ServicesServer extends AbstractServer implements ServerInterface
     {
         $this->server = new Server($this->host,$this->port);
         $factory = new Psr17Factory();
-    
-        // Session init
-        Session::start();
+          
         // Set router       
         Arikaim::$app->getRouteCollector()->setDefaultInvocationStrategy(new ValidatorStrategy());                          
         // Add middlewares
@@ -53,7 +51,7 @@ class ServicesServer extends AbstractServer implements ServerInterface
 
         // server start
         $this->server->on('start',function (Server $server) {
-            echo 'Http server is started at ' . $this->hostToString() . PHP_EOL;
+            echo 'Services server is started at ' . $this->hostToString() . PHP_EOL;
         });
 
         // server request
@@ -67,7 +65,7 @@ class ServicesServer extends AbstractServer implements ServerInterface
 
         // server stop
         $this->server->on('shutdown',function($server, $workerId) {
-            echo 'Http server shutdown ' . PHP_EOL;
+            echo 'Servcies server shutdown ' . PHP_EOL;
         });
     }
 
