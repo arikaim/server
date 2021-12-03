@@ -68,30 +68,55 @@ class WebSocketServer extends AbstractServer implements ServerInterface
     public function boot(): void
     {
         $this->server = new Server($this->host,$this->port);
-     
+        
+        $this->server->set([
+            'open_http_protocol' => true
+        ]);
+    
         // server start
         $this->server->on('start',function($server) {
             echo 'WebSocket server is started at ' . $this->hostToString() . PHP_EOL;
         });
+        
+        $this->server->on('request', function ($request, $response) {
+            $response->header('Access-Control-Allow-Origin','*');
+            $response->header('Access-Control-Allow-Headers','*, Authorization');
+            $response->header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+            $response->header('Access-Control-Allow-Credentials','true');
+            $response->header('Content-Type', 'text/html');
+
+            $this->server->header['Access-Control-Allow-Origin'] = '*';
+            $response->end('request');
+        });
+       
+        /*
+        $this->server->on('handshake',function ($request, $response) {
+            return true;
+        });
+        */
 
         // connection open
         $this->server->on('open',function($server, $request) {     
-            $this->webSocketApp->onOpen($server,$request);                    
+            $this->webSocketApp->onOpen($server,$request);   
+            return true;              
         });
 
         // received message
-        $this->server->on('message',function($server, $frame) {        
+        $this->server->on('Message',function($server, $frame) {  
             $this->webSocketApp->onMessage($server,$frame);      
+            return true;   
         });
 
         // colse connection
         $this->server->on('close',function($server, int $fd) {   
-            $this->webSocketApp->onClose($server,$fd);              
+            $this->webSocketApp->onClose($server,$fd);   
+            return true;              
         });
 
         // disconnected
         $this->server->on('disconnect',function($server, int $fd) {  
-            $this->webSocketApp->onDisconnect($server,$fd);           
+            $this->webSocketApp->onDisconnect($server,$fd);   
+            return true;           
         });
     }
 
