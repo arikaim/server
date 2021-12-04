@@ -22,7 +22,6 @@ use Slim\Exception\HttpMethodNotAllowedException;
 use Slim\Exception\HttpNotFoundException;
 
 use Arikaim\Core\Interfaces\RoutesInterface;
-use Arikaim\Core\System\Error\Renderer\JsonErrorRenderer;
 use Arikaim\Core\App\SystemRoutes;
 use Arikaim\Core\Models\Users;
 use Arikaim\Core\Models\AccessTokens;
@@ -32,7 +31,6 @@ use Arikaim\Core\Routes\MiddlewareFactory;
 use Arikaim\Core\Routes\RouteType;
 use RuntimeException;
 use Exception;
-use Closure;
 
 /**
  * Services server routing middleware
@@ -64,54 +62,18 @@ class ServicesRoutingMiddleware implements MiddlewareInterface
     protected $routes = null;
 
     /**
-     * Service container
-     *
-     * @var object|null
-     */
-    protected $container = null;
-
-    /**
-     * Error renderer
-     *
-     * @var JsonErrorRenderer
-     */
-    protected $errorRender;
-
-    /**
      * @param RouteResolverInterface $routeResolver
      * @param RouteCollectorInterface   $routeCollector
      */
-    public function __construct(
-        RouteResolverInterface $routeResolver,
-        RouteCollectorInterface $routeCollector,
-        Closure $routesClosure = null,
-        $container = null
-    )
+    public function __construct(RouteResolverInterface $routeResolver, RouteCollectorInterface $routeCollector, $routes = null)
     {
         $this->routeResolver = $routeResolver;
         $this->routeParser = $routeCollector->getRouteParser();
         $this->routeCollector = $routeCollector;
-        $this->routesClosure = $routesClosure;
-        $this->container = $container;
-        $this->errorRender = new JsonErrorRenderer();
+        $this->routes = $routes;
 
-        // add admin twig extension
-        $this->container->get('view')->addExtension(new \Arikaim\Core\App\AdminTwigExtension);
-        
         // load api routes
         $this->mapRoutes('',RoutesInterface::API);
-    }
-
-    /**
-     * Resolve routes ref
-     *
-     * @return void
-     */
-    protected function resolveRoutes()
-    {
-        if (\is_callable($this->routesClosure) == true && empty($this->routes) == true) {
-            return $this->routes = ($this->routesClosure)();
-        }
     }
 
     /**
@@ -215,13 +177,9 @@ class ServicesRoutingMiddleware implements MiddlewareInterface
      */
     public function mapRoutes(string $method, ?int $type = null): bool
     {      
-        $this->resolveRoutes();
-
         try {   
-            $routes = [];      
-            if (empty($this->routes) == false) {
-                $routes = $this->routes->searchRoutes($method,$type);                
-            }           
+            $routes = $this->routes->searchRoutes($method,$type);                
+                    
             AuthFactory::setUserProvider('session',new Users());
             AuthFactory::setUserProvider('token',new AccessTokens());
         } catch(Exception $e) {

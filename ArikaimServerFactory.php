@@ -16,7 +16,7 @@ use Arikaim\Core\Server\ServerInterface;
  */
 class ArikaimServerFactory 
 {  
-    const DEFAULT_SERVER_TYPE = 'http';
+    const DEFAULT_SERVER_TYPE = 'services';
     const DEFAULT_SERVER_LIB  = 'swoole';
 
     const SERVER_TYPE = [

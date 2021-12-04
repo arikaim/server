@@ -10,7 +10,6 @@
 namespace Arikaim\Core\Server;
 
 use Arikaim\Core\Server\ServerInterface;
-use Twig\Node\Expression\Test\NullTest;
 
 /**
  * Abstract server 
@@ -45,13 +44,6 @@ abstract class AbstractServer implements ServerInterface
     protected $options;
 
     /**
-     * Server status
-     *
-     * @var string|null
-     */
-    protected $status;
-
-    /**
      * Constructor
      *
      * @param string $host
@@ -84,11 +76,8 @@ abstract class AbstractServer implements ServerInterface
      *    
      * @return void
      */
-    public function stop(): void
-    {
-        $this->status = Self::STATUS_STOP;
-    }
-
+    abstract public function stop(): void;
+  
     /**
      * Get option
      *
@@ -109,5 +98,16 @@ abstract class AbstractServer implements ServerInterface
     public function hostToString(): string 
     {
         return $this->host . ':' . $this->port;
+    }
+
+    /**
+     * Show console messge
+     *
+     * @param string $message
+     * @return void
+     */
+    public function consoleMsg(string $message): void 
+    {
+        echo PHP_EOL . $message;
     }
 }

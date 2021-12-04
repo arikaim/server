@@ -15,7 +15,6 @@ use Swoole\WebSocket\Server;
 use Arikaim\Core\Server\AbstractServer;
 use Arikaim\Core\Server\ServerInterface;
 use Arikaim\Core\Server\WebSocketAppInterface;
-use Arikaim\Core\Arikaim;
 use Exception;
 
 /**
@@ -85,16 +84,9 @@ class WebSocketServer extends AbstractServer implements ServerInterface
             $response->header('Access-Control-Allow-Credentials','true');
             $response->header('Content-Type', 'text/html');
 
-            $this->server->header['Access-Control-Allow-Origin'] = '*';
-            $response->end('request');
+            $response->end('Web socket server.');
         });
        
-        /*
-        $this->server->on('handshake',function ($request, $response) {
-            return true;
-        });
-        */
-
         // connection open
         $this->server->on('open',function($server, $request) {     
             $this->webSocketApp->onOpen($server,$request);   
@@ -128,5 +120,15 @@ class WebSocketServer extends AbstractServer implements ServerInterface
     public function run(): void
     {
         $this->server->start();
-    } 
+    }
+    
+    /**
+     * Stop server
+     *    
+     * @return void
+     */
+    public function stop(): void
+    {
+        $this->server->stop();
+    }
 }

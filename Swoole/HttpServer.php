@@ -80,4 +80,14 @@ class HttpServer extends AbstractServer implements ServerInterface
     {
         $this->server->start();
     }
+
+    /**
+     * Stop server
+     *    
+     * @return void
+     */
+    public function stop(): void
+    {
+        $this->server->stop();
+    }
 }

@@ -43,8 +43,7 @@ class ServicesServer extends AbstractServer implements ServerInterface
     */
     public function boot(): void
     {
-        echo PHP_EOL . 'Server boot ...' . PHP_EOL;
-
+        $this->consoleMsg('Server boot ...');
         $this->server = new Server($this->host,$this->port);
         $factory = new Psr17Factory();
           
@@ -55,7 +54,7 @@ class ServicesServer extends AbstractServer implements ServerInterface
 
         // server start
         $this->server->on('start',function (Server $server) {
-            echo PHP_EOL . 'Services server is started at ' . $this->hostToString() . PHP_EOL;
+            $this->consoleMsg('Services server is started at ' . $this->hostToString());           
         });
 
         // server request
@@ -63,13 +62,13 @@ class ServicesServer extends AbstractServer implements ServerInterface
             $GLOBALS['APP_START_TIME'] = \microtime(true);
 
             $psrRequest = RequestConverter::convert($request,$factory);
-            $psrResponse = Arikaim::$app->handle($psrRequest);         
-            ResponseConverter::convert($psrResponse,$response)->end();          
+            $psrResponse = Arikaim::$app->handle($psrRequest);                    
+            ResponseConverter::convert($psrResponse,$response)->end();     
         });
 
         // server stop
         $this->server->on('shutdown',function($server, $workerId) {
-            echo 'Servcies server shutdown ' . PHP_EOL;
+            $this->consoleMsg('Servcies server shutdown.');          
         });
     }
 
@@ -84,22 +83,29 @@ class ServicesServer extends AbstractServer implements ServerInterface
     }
 
     /**
+     * Stop server
+     *    
+     * @return void
+     */
+    public function stop(): void
+    {
+        $this->server->stop();
+    }
+
+    /**
      * Init middleware
      *
      * @return void
      */
-    protected function initMiddleware()
+    protected function initMiddleware(?array $config = null)
     {        
-        echo 'Loadign routes ...' . PHP_EOL;
-
+        $this->consoleMsg('Loadign routes ...');       
+     
         // add routing
         $routingMiddleware = new ServicesRoutingMiddleware(
             Arikaim::$app->getRouteResolver(),          
             Arikaim::$app->getRouteCollector(),
-            function() {
-                return Arikaim::routes();
-            },
-            Arikaim::$app->getContainer()
+            Arikaim::routes()          
         );
         Arikaim::$app->add($routingMiddleware);            
         Arikaim::$app->add(new BodyParsingMiddleware());
@@ -108,14 +114,14 @@ class ServicesServer extends AbstractServer implements ServerInterface
             function() {
                 return Arikaim::page();
             },
-            Arikaim::$app->getResponseFactory()
+           Arikaim::$app->getResponseFactory()
         );
         Arikaim::$app->add($errorMiddleware); 
         
         // add global middlewares
         $middlewares = $config['middleware'] ?? Arikaim::config()->get('middleware',[]);      
         foreach ($middlewares as $item) {
-            Arikaim::$app->add(new $item());
+           Arikaim::$app->add(new $item());
         }        
     }
 }

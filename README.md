@@ -6,8 +6,7 @@ Arikaim server core package
 
 Http, services and websocket server created with swoole php extension.
 
-#### Requirements 
-  * PHP 7.4
+#### Requirements   
   * [Arikaim CMS](https://github.com/arikaim/arikaim)
 
 #### Installation
