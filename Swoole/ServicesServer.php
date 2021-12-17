@@ -14,15 +14,11 @@ use Swoole\HTTP\Request;
 use Swoole\HTTP\Response;
 use Swoole\HTTP\Server;
 
-use Arikaim\Core\Server\ServicesRoutingMiddleware;
-use Arikaim\Core\Server\ServicesErrorMiddleware;
-use Arikaim\Core\Middleware\BodyParsingMiddleware;
 use Arikaim\Core\Server\AbstractServer;
 use Arikaim\Core\Server\Swoole\RequestConverter;
 use Arikaim\Core\Server\Swoole\ResponseConverter;
 use Arikaim\Core\Server\ServerInterface;
 use Arikaim\Core\Arikaim;
-use Arikaim\Core\Validator\ValidatorStrategy;
 
 /**
  * Arikaim services swoole server 
@@ -46,12 +42,7 @@ class ServicesServer extends AbstractServer implements ServerInterface
         $this->consoleMsg('Server boot ...');
         $this->server = new Server($this->host,$this->port);
         $factory = new Psr17Factory();
-          
-        // Set router       
-        Arikaim::$app->getRouteCollector()->setDefaultInvocationStrategy(new ValidatorStrategy());                          
-        // Add middlewares
-        $this->initMiddleware();
-
+                                      
         // server start
         $this->server->on('start',function (Server $server) {
             $this->consoleMsg('Services server is started at ' . $this->hostToString());           
@@ -92,36 +83,5 @@ class ServicesServer extends AbstractServer implements ServerInterface
         $this->server->stop();
     }
 
-    /**
-     * Init middleware
-     *
-     * @return void
-     */
-    protected function initMiddleware(?array $config = null)
-    {        
-        $this->consoleMsg('Loadign routes ...');       
-     
-        // add routing
-        $routingMiddleware = new ServicesRoutingMiddleware(
-            Arikaim::$app->getRouteResolver(),          
-            Arikaim::$app->getRouteCollector(),
-            Arikaim::routes()          
-        );
-        Arikaim::$app->add($routingMiddleware);            
-        Arikaim::$app->add(new BodyParsingMiddleware());
-                      
-        $errorMiddleware = new ServicesErrorMiddleware(
-            function() {
-                return Arikaim::page();
-            },
-           Arikaim::$app->getResponseFactory()
-        );
-        Arikaim::$app->add($errorMiddleware); 
-        
-        // add global middlewares
-        $middlewares = $config['middleware'] ?? Arikaim::config()->get('middleware',[]);      
-        foreach ($middlewares as $item) {
-           Arikaim::$app->add(new $item());
-        }        
-    }
+   
 }
