@@ -19,6 +19,9 @@ use Arikaim\Core\Server\Swoole\ResponseConverter;
 use Arikaim\Core\Server\ServerInterface;
 use Arikaim\Core\Framework\Middleware\BodyParsingMiddleware;
 use Arikaim\Core\Arikaim;
+use Arikaim\Core\Server\ServerRouter;
+use Arikaim\Core\Server\ServerErrorHandler;
+use Arikaim\Core\Routes\RouteType;
 
 /**
  * Arikaim services swoole server 
@@ -42,6 +45,7 @@ class ServicesServer extends AbstractServer implements ServerInterface
         $this->consoleMsg('Server boot ...');
         $this->server = new Server($this->host,$this->port);
 
+        Arikaim::$app->setErrorHandler(ServerErrorHandler::class);
         Arikaim::$app->addMiddleware(BodyParsingMiddleware::class);   
 
         $middlewares = Arikaim::config()->get('middleware',[]); 
@@ -51,19 +55,27 @@ class ServicesServer extends AbstractServer implements ServerInterface
             }           
         }  
        
-        $factory = Arikaim::$app->getFactory();
-                                      
+        $router = new ServerRouter(Arikaim::getContainer(),'');
+
+        $this->consoleMsg('Load routes ...');
+        $router->loadRoutes(RouteType::API_URL);
+        Arikaim::$app->setRouter($router);
+
+        $factory = Arikaim::$app->getFactory();       
+        $emptyResponse = $factory->createResponse(200);
+
         // server start
         $this->server->on('start',function (Server $server) {
-            $this->consoleMsg('Services server is started at ' . $this->hostToString());           
+            $this->consoleMsg('Services server is started at ' . $this->hostToString() . PHP_EOL);           
         });
 
         // server request
-        $this->server->on('request',function(Request $request, Response $response) use($factory) {          
+        $this->server->on('request',function(Request $request, Response $response) use($factory,$emptyResponse) {          
             $GLOBALS['APP_START_TIME'] = \microtime(true);
 
-            $psrRequest = RequestConverter::convert($request,$factory);
-            $psrResponse = Arikaim::$app->handleRequest($psrRequest);                    
+            $psrRequest = RequestConverter::convert($request,$factory);         
+            $psrResponse = Arikaim::$app->handleRequest($psrRequest,$emptyResponse);  
+         
             ResponseConverter::convert($psrResponse,$response)->end();     
         });
 

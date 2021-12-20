@@ -89,7 +89,6 @@ class ArikaimServerFactory
             }
         }
         
-
         $options['type'] = $console['t'] ?? 'services';
         $options['host'] = $console['h'] ?? null;
         $options['port'] = $console['p'] ?? null;
@@ -107,6 +106,8 @@ class ArikaimServerFactory
      */
     public static function loadConfigFile(string $fileName): ?array
     {
+        $fileName = ROOT_PATH . DIRECTORY_SEPARATOR . $fileName;
+
         return (\file_exists($fileName) == true) ? include($fileName) : null;          
     }
 }
