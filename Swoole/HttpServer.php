@@ -47,7 +47,6 @@ class HttpServer extends AbstractServer implements ServerInterface
         // Session init
         Session::start();
                              
-      
         // server start
         $this->server->on('start',function (Server $server) {
             echo 'Http server is started at ' . $this->hostToString() . PHP_EOL;
