@@ -12,8 +12,7 @@ namespace Arikaim\Core\Server;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
-use Arikaim\Core\System\Error\Renderer\JsonErrorRenderer;
-use Arikaim\Core\System\Error\PhpError;
+use Arikaim\Core\System\Error\ApplicationError;
 use ErrorException;
 use Throwable;
 
@@ -37,7 +36,7 @@ class ServerErrorHandler
     public function __construct($container = null,$renderer = null)
     {               
         $this->container = $container;
-        $this->renderer = ($renderer == null) ? new JsonErrorRenderer() : $renderer;         
+        $this->renderer = ($renderer == null) ? new ApplicationError($container->get('page')) : $renderer;         
     }
 
     /**
@@ -75,7 +74,7 @@ class ServerErrorHandler
      */
     public function renderExecption(Throwable $exception, ServerRequestInterface $request, ResponseInterface $response): ResponseInterface
     {        
-        $output = $this->renderer->render(PhpError::toArray($exception));
+        $output = $this->renderer->renderError($exception,'json');
         $response->getBody()->write($output);
 
         return $response->withStatus(400);      

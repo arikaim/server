@@ -45,6 +45,9 @@ class ServicesServer extends AbstractServer implements ServerInterface
         $this->consoleMsg('Server boot ...');
         $this->server = new Server($this->host,$this->port);
 
+        // boot db
+        Arikaim::get('db');
+
         Arikaim::$app->setErrorHandler(ServerErrorHandler::class);
         Arikaim::$app->addMiddleware(BodyParsingMiddleware::class);   
 
